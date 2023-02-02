@@ -1,3 +1,8 @@
+library(utf8)
+library(pillar)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
 
 # import csv
 data <- read.csv("C:/Users/Malcolm/Downloads/SeoulBikeData.csv", header=FALSE)
