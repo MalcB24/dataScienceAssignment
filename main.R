@@ -56,4 +56,19 @@ for(i in 1:nrow(null_data))
       data[rownames(null_data)[i],col_name] <- hourly_average
     }
   }
-}
+}# group data by month
+monthly <- data %>%  group_by(month = lubridate::floor_date(date, "month")) %>%
+  summarize(average = mean(RentCount), sd = sd(RentCount))
+
+# convert from date to month name
+monthly$month <- months(as.Date(monthly$month)) 
+# order by month
+monthly <- monthly %>% mutate(month = factor(month, levels=month.name)) %>% arrange(month)
+
+View(monthly)
+
+# plot average and sd per month
+ggplot(monthly, aes(x=month, y=average)) +
+  geom_bar(stat="identity",fill="blue") +
+  geom_errorbar(aes(ymin=average-sd, ymax=average+sd), width=.3) +
+  geom_point(size=2)
