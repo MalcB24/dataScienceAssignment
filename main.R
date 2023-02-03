@@ -36,6 +36,7 @@ null_data <- data[!complete.cases(data),]
 # list rows that contain the null values
 View(null_data)
 
+# Task 2
 for(i in 1:nrow(null_data)) 
 {
   
@@ -58,6 +59,11 @@ for(i in 1:nrow(null_data))
     }
   }
 }
+
+# Task3
+
+# candle 3
+
 # group data by month
 monthly <- data %>%  group_by(month = lubridate::floor_date(date, "month")) %>%
   summarize(average = mean(RentCount), sd = sd(RentCount))
@@ -74,7 +80,9 @@ ggplot(monthly, aes(x=month, y=average)) + ylab("Rent Count") + xlab("Month") + 
   geom_bar(stat="identity",fill="blue") +
   geom_errorbar(aes(ymin=average-sd, ymax=average+sd), width=.3) +
   geom_point(size=2)
-}
+
+
+# candle 4
 
 # gets list of the different Seasons in the dataset
 seasons <- unique(data$Season)
@@ -113,8 +121,10 @@ View(seasonal_hourly)
 # plots a line for each Season
 melted %>% ggplot(aes(x=variable,y=value, color = Season, group=Season)) + xlab("Hour") + ylab("Average Rent Count") + ggtitle("Rented Bike Count by Hour of the day across season") + 
   geom_line(linewidth=1.2)
-}
- 
+
+
+# candle 5
+
 # selecting only required columns
 weekday_data <- data %>% select(date, RentCount, Hour)
 # convert date to day of week
