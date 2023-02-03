@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = FALSE) #sets global options to apply for every chun
 library(flexdashboard)
 
 ```
-Importing the Data {data-navmenu="Task 2"}
 
 ```{r}
 library(utf8)
@@ -81,6 +80,34 @@ for(i in 1:nrow(null_data))
   }
 }
 ```
+
+Understanding the data
+===================================== 
+
+Row
+-------------------------------------
+### What can you say about the various variables?
+
+The data given contains both numerical and categorical variables. The Categorical Variables include Date (Nominal), Hour (Ordinal), Season (Nominal), Holiday (Nominal), and Functional Day (Nominal). The Numerical Variables include Rented Bike Count (Discrete), Temperature (Continuous), Humidity (Continuous), Windspeed (Continuous), Visibility (Continuous), Solar Radiation (Continuous), Rainfall (Continuous), and Snowfall (Continuous).
+
+Row 
+-------------------------------------
+### What statistical analysis would you apply over the data to understand it better?
+To understand the data given, various statistical analysis can be performed. Descriptive Statistics can be applied to summarize the central tendency, dispersion, and shape of the distribution of the variables. This will help in getting an overview of the data and identifying any outliers. Correlation Analysis can be used to examine the relationship between different variables and determine if any of them are related to the rental bike count. This can help in identifying variables that are influential in affecting the rental bike count. Box Plots and Histograms can be used to visualize the distribution of the rental bike count and other variables. This can help in identifying the distribution of the data and any patterns that may be present.
+
+Row 
+-------------------------------------
+### What can you say about the distribution of the Rented Bike Count variable?
+From the histogram and based on the data given in the excel file, the rental bike count distribution appears to be skewed to the right, therefore, being a positive one, with more rented bikes in the lower intervals and fewer rented bikes in the higher intervals. The shape of the distribution is not symmetrical, indicating that the rental bike count may not follow a normal distribution.
+
+### Histogram
+
+```{r}
+  
+histogram_data <- hist(data$RentCount, breaks=33, col="blue")
+```
+
+Importing the Data {data-navmenu="Cleaning the data"}
 ===================================== 
 
 Row {data-height=100}
@@ -120,7 +147,7 @@ data$Rain <- as.numeric(as.character(data$Rain))
 data$Snow <- as.numeric(as.character(data$Snow))
 ```
 
-Data Imputation {data-navmenu="Task 2"}
+Data Imputation {data-navmenu="Cleaning the data"}
 ===================================== 
 ### The data provided contained null values as can be seen below:
 
