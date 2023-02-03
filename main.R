@@ -3,7 +3,7 @@ library(pillar)
 library(lubridate)
 library(dplyr)
 library(ggplot2)
-library(reshape)
+library(reshape2)
 
 # import csv
 data <- read.csv("C:/Users/Malcolm/Downloads/SeoulBikeData.csv", header=FALSE)
@@ -169,3 +169,35 @@ View(melted_grouped_weekday_data)
 melted_grouped_weekday_data %>% ggplot(aes(x=variable, y=value, color=Day, group=Day)) +
   xlab("Hour") + ylab("Average Rent Count") + ggtitle("Rented Bike Count by Hour of the day across weekdays") + 
   geom_line(linewidth=1.2)
+
+# candle 6
+
+summer_winter_data <- data %>% filter(Season == "Summer" | Season =="Winter") %>% group_by(Season) %>% summarise(Total=sum(RentCount), "Average\n(multiplied by 1000 for clearer view)"=mean(RentCount)*1000)
+
+summer_winter_data <- melt(summer_winter_data, id.vars="Season")
+View(summer_winter_data)
+
+ggplot(summer_winter_data, aes(x=Season, y=value, group=variable, fill=variable)) + 
+  ylab("Rent Count") + xlab("Season") + ggtitle("Average and Total of Rented Bike Count for Summer and Winter") +
+  geom_bar( position = "dodge", stat = "identity")
+
+#filters and only keeps required columns
+summer_winter_data <- data %>% filter(Season == "Summer" | Season =="Winter") %>% select(date, Hour, RentCount, Season)
+
+# gets hourly averages
+summer_winter_hourly_average <- summer_winter_data %>% group_by(Season) %>% summarise(average=mean(RentCount))
+
+# gets totals for day
+summer_winter_daily_average <- summer_winter_data %>% group_by(date) %>% summarise(Season=Season, total=sum(RentCount)) %>%
+# gets daily averages
+  group_by(Season) %>% summarise(average=mean(total))
+
+# plots daily averages
+ggplot(summer_winter_daily_average, aes(x=Season, y=average)) + 
+  ylab("Average Rent Count") + xlab("Season") + ggtitle("Daily Averages of Rented Bike Count for Summer and Winter") +
+  geom_bar(position = "dodge", stat = "identity")
+
+# plots hourly averages
+ggplot(summer_winter_hourly_average, aes(x=Season, y=average)) + 
+  ylab("Average Rent Count") + xlab("Season") + ggtitle("Hourly Averages of Rented Bike Count for Summer and Winter") +
+  geom_bar(position = "dodge", stat = "identity")
