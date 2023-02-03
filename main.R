@@ -58,6 +58,62 @@ for(i in 1:nrow(null_data))
     }
   }
 }
+# group data by month
+monthly <- data %>%  group_by(month = lubridate::floor_date(date, "month")) %>%
+  summarize(average = mean(RentCount), sd = sd(RentCount))
+
+# convert from date to month name
+monthly$month <- months(as.Date(monthly$month)) 
+# order by month
+monthly <- monthly %>% mutate(month = factor(month, levels=month.name)) %>% arrange(month)
+
+View(monthly)
+
+# plot average and sd per month
+ggplot(monthly, aes(x=month, y=average)) + ylab("Rent Count") + xlab("Month") + ggtitle("Average and Standard Deviation of Rented Bike Count for each month") +
+  geom_bar(stat="identity",fill="blue") +
+  geom_errorbar(aes(ymin=average-sd, ymax=average+sd), width=.3) +
+  geom_point(size=2)
+}
+
+# gets list of the different Seasons in the dataset
+seasons <- unique(data$Season)
+
+# creates empty dataframe
+seasonal_hourly = data.frame()
+
+# loops through the seasons
+for(i in seasons)
+{
+  
+  # filters the data to show only of season i
+  x <- filter(data, Season == i) %>% 
+    # groups the data by the hour
+    group_by(Hour) %>% 
+    # gets the mean RentCount for each hour
+    summarise(average = mean(RentCount))
+  
+  #transposition of x 
+  y <- transpose(x)
+  # adds the season that corresponds to the data
+  y <- cbind(y, i)
+  # names the columns
+  colnames(y) <- c(0:23, "Season")
+  # removes the first row which held the column names
+  y <- y[-c(1), ]
+  # adds the season row to the seasonal hourly
+  seasonal_hourly = rbind(seasonal_hourly, y)
+
+}
+#moves season column to front (not necessary but easier to understand when viewing)
+seasonal_hourly <- seasonal_hourly %>% relocate(Season)
+# melts the seasonal_hourly dataframe so as to be able to plot
+melted <- melt(seasonal_hourly, id.vars="Season")
+View(seasonal_hourly)
+# plots a line for each Season
+melted %>% ggplot(aes(x=variable,y=value, color = Season, group=Season)) + xlab("Hour") + ylab("Average Rent Count") + ggtitle("Rented Bike Count by Hour of the day across season") + 
+  geom_line(linewidth=1.2)
+}
  
 # selecting only required columns
 weekday_data <- data %>% select(date, RentCount, Hour)
