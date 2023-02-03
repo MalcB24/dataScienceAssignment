@@ -192,7 +192,7 @@ for(i in 1:nrow(null_data))
 Deviation {data-navmenu="Data Analysis"}
 ===================================== 
 
-Row
+Row {data-height=800}
 -------------------------------------
 
 ### Graph
@@ -297,7 +297,7 @@ FILL HERE
 Seasonal Statistics {data-navmenu="Data Analysis"}
 ===================================== 
 
-Row
+Row {data-height=800}
 -------------------------------------
 ### Graph
 
@@ -352,7 +352,7 @@ FILL HERE
 Daily Statistics {data-navmenu="Data Analysis"}
 ===================================== 
 
-Row
+Row {data-height=800}
 -------------------------------------
 
 ### Graph
@@ -414,7 +414,7 @@ Summer and Winter Comparisons {data-navmenu="Data Analysis"}
 ===================================== 
 
 
-Row 
+Row {data-height=800}
 -------------------------------------
 
 ### Graph 1
