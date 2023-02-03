@@ -21,16 +21,16 @@ data$Holiday[data$Holiday == 'No Holiday'] <- FALSE
 data$Holiday[data$Holiday == 'Holiday'] <- TRUE
 
 data$date <- dmy(data$date)
-as.numeric(as.character(data$RentCount))
-as.numeric(as.character(data$Hour))
-as.numeric(as.character(data$Temp))
-as.numeric(as.character(data$Hum))
-as.numeric(as.character(data$Vis))
-as.numeric(as.character(data$Dew))
-as.numeric(as.character(data$Wind))
-as.numeric(as.character(data$SolRad))
-as.numeric(as.character(data$Rain))
-as.numeric(as.character(data$Snow))
+data$RentCount <- as.integer(as.character(data$RentCount))
+data$Hour <- as.numeric(as.character(data$Hour))
+data$Temp <- as.numeric(as.character(data$Temp))
+data$Hum <- as.numeric(as.character(data$Hum))
+data$Vis <- as.numeric(as.character(data$Vis))
+data$Dew <- as.numeric(as.character(data$Dew))
+data$Wind <- as.numeric(as.character(data$Wind))
+data$SolRad <- as.numeric(as.character(data$SolRad))
+data$Rain <- as.numeric(as.character(data$Rain))
+data$Snow <- as.numeric(as.character(data$Snow))
 
 # finds the null values
 null_data <- data[!complete.cases(data),]
@@ -54,7 +54,11 @@ for(i in 1:nrow(null_data))
       season_hour_data = filter(data, Season == null_data[i, "Season"] & Hour == hour) 
       #gets average value
       hourly_average = mean(season_hour_data[,col_name], na.rm = TRUE)
-      
+
+      if(col_name == "RentCount")
+      {
+        hourly_average = floor(hourly_average)
+      }
       #replaces the missing value with the average value
       data[rownames(null_data)[i],col_name] <- hourly_average
     }
@@ -172,15 +176,6 @@ melted_grouped_weekday_data %>% ggplot(aes(x=variable, y=value, color=Day, group
   geom_line(linewidth=1.2)
 
 # candle 6
-
-summer_winter_data <- data %>% filter(Season == "Summer" | Season =="Winter") %>% group_by(Season) %>% summarise(Total=sum(RentCount), "Average\n(multiplied by 1000 for clearer view)"=mean(RentCount)*1000)
-
-summer_winter_data <- melt(summer_winter_data, id.vars="Season")
-View(summer_winter_data)
-
-ggplot(summer_winter_data, aes(x=Season, y=value, group=variable, fill=variable)) + 
-  ylab("Rent Count") + xlab("Season") + ggtitle("Average and Total of Rented Bike Count for Summer and Winter") +
-  geom_bar( position = "dodge", stat = "identity")
 
 #filters and only keeps required columns
 summer_winter_data <- data %>% filter(Season == "Summer" | Season =="Winter") %>% select(date, Hour, RentCount, Season)
