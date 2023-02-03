@@ -4,6 +4,7 @@ library(lubridate)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
+library(data.table)
 
 # import csv
 data <- read.csv("C:/Users/Malcolm/Downloads/SeoulBikeData.csv", header=FALSE)
