@@ -61,9 +61,42 @@ for(i in 1:nrow(null_data))
   }
 }
 
+
+# copy of data
+temp_dat <- data
+
+# changing data so as to be numerical to calculate correlation
+temp_dat$Season[temp_dat$Season == 'Winter'] <- 0
+temp_dat$Season[temp_dat$Season == 'Spring'] <- 1
+temp_dat$Season[temp_dat$Season == 'Summer'] <- 2
+temp_dat$Season[temp_dat$Season == 'Autumn'] <- 3
+temp_dat$Holiday[temp_dat$Holiday == 'FALSE'] <- 0
+temp_dat$Holiday[temp_dat$Holiday == 'TRUE'] <- 1
+temp_dat$Function[temp_dat$Function == 'FALSE'] <- 0
+temp_dat$Function[temp_dat$Function == 'TRUE'] <- 1
+
+# changing types
+temp_dat$Season <- as.numeric(temp_dat$Season)
+temp_dat$Holiday <- as.numeric(temp_dat$Holiday)
+temp_dat$Function <- as.numeric(temp_dat$Function)
+
+# removing date column
+dataNoDate <- temp_dat[, !colnames(temp_dat) %in% "date"]
+
+str(dataNoDate)
+
+cor_matrix <- cor(dataNoDate)
+print(cor_matrix)
+
+histogram_data <- hist(data$RentCount, breaks=33, col="blue") 
+
+
+
+
 # Task3
 
 # candle 3
+
 
 # group data by month
 monthly <- data %>%  group_by(month = lubridate::floor_date(date, "month")) %>%
