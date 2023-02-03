@@ -68,7 +68,7 @@ monthly <- monthly %>% mutate(month = factor(month, levels=month.name)) %>% arra
 View(monthly)
 
 # plot average and sd per month
-ggplot(monthly, aes(x=month, y=average)) +
+ggplot(monthly, aes(x=month, y=average)) + ylab("Rent Count") + xlab("Month") + ggtitle("Average and Standard Deviation of Rented Bike Count for each month") +
   geom_bar(stat="identity",fill="blue") +
   geom_errorbar(aes(ymin=average-sd, ymax=average+sd), width=.3) +
   geom_point(size=2)
