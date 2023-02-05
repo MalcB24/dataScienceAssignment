@@ -2,9 +2,9 @@
 title: "Dashboard"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: rows
+    orientation: rows  
+    vertical_layout: scroll
 ---
-
 
 ```{r echo=FALSE, eval=TRUE}
 #{r options} applies to chunks of code 
@@ -18,6 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(data.table)
+library(knitr)
 
 # import csv
 data <- read.csv("C:/Users/Malcolm/Downloads/SeoulBikeData.csv", header=FALSE)
@@ -83,30 +84,38 @@ for(i in 1:nrow(null_data))
 Understanding the data
 ===================================== 
 
-Row
+### Understanding The Data
+
+Row {data-height=100}
 -------------------------------------
 ### What can you say about the various variables?
 
 The data given contains both numerical and categorical variables. The Categorical Variables include Date (Nominal), Hour (Ordinal), Season (Nominal), Holiday (Nominal), and Functional Day (Nominal). The Numerical Variables include Rented Bike Count (Discrete), Temperature (Continuous), Humidity (Continuous), Windspeed (Continuous), Visibility (Continuous), Solar Radiation (Continuous), Rainfall (Continuous), and Snowfall (Continuous).
 
-Row 
+Row {data-height=150}
 -------------------------------------
 ### What statistical analysis would you apply over the data to understand it better?
 To understand the data given, various statistical analysis can be performed. Descriptive Statistics can be applied to summarize the central tendency, dispersion, and shape of the distribution of the variables. This will help in getting an overview of the data and identifying any outliers. Correlation Analysis can be used to examine the relationship between different variables and determine if any of them are related to the rental bike count. This can help in identifying variables that are influential in affecting the rental bike count. Box Plots and Histograms can be used to visualize the distribution of the rental bike count and other variables. This can help in identifying the distribution of the data and any patterns that may be present.
 
-Row 
+Row {data-height=100}
 -------------------------------------
 ### What can you say about the distribution of the Rented Bike Count variable?
 From the histogram and based on the data given in the excel file, the rental bike count distribution appears to be skewed to the right, therefore, being a positive one, with more rented bikes in the lower intervals and fewer rented bikes in the higher intervals. The shape of the distribution is not symmetrical, indicating that the rental bike count may not follow a normal distribution.
 
+Row {data.height=500}
+-------------------------------------
 ### Histogram
 
-```{r}
-histogram_data <- hist(data$RentCount, breaks=33, col="blue")
+```{r fig.width=18, fig.height=6}
+histogram_data <- hist(data$RentCount, 
+   col="#74b6f3", ylim=c(0,1400), xlim=c(0,3630), breaks=seq(0,3630,110), xaxp=c(0,3630,33), las = 2,
+  main="Histogram of Rent Count", xlab="Ranges", ylab="Frequency")
 ```
 
 Importing the Data {data-navmenu="Cleaning the data"}
 ===================================== 
+
+### Importing and Cleaning the data
 
 Row {data-height=100}
 -------------------------------------
@@ -147,17 +156,21 @@ data$Snow <- as.numeric(as.character(data$Snow))
 
 Data Imputation {data-navmenu="Cleaning the data"}
 ===================================== 
+
+### Imputing the data
+
+Row
+-------------------------------------
+
 ### The data provided contained null values as can be seen below:
 
 ```{r}
-library(knitr)
 kable(null_data, caption = "Null values")
 ```
 
 As a data imputation strategy we opted to use the '(Rounded) Mean or Moving Average or Median Value' strategy. This implementation was done by getting the average value of the missing data of the same Season and Hour and replacing the missing value with it. After the data imputation was complete, the null values were replaced:
 
 ```{r}
-library(knitr)
 kable(filled_null_data, caption = "Imputated Null values")
 ```
 
@@ -194,12 +207,12 @@ for(i in 1:nrow(null_data))
 Deviation {data-navmenu="Data Analysis"}
 ===================================== 
 
-Row {data-height=800}
+Row {data-height=500}
 -------------------------------------
 
 ### Graph
 
-```{r}
+```{r fig.width=10}
 # Task3
 
 # candle 3
@@ -216,7 +229,7 @@ monthly <- monthly %>% mutate(month = factor(month, levels=month.name)) %>% arra
 
 # plot average and sd per month
 p <- ggplot(monthly, aes(x=month, y=average)) + ylab("Rent Count") + xlab("Month") + ggtitle("Average and Standard Deviation of Rented Bike Count for each month") +
-  geom_bar(stat="identity",fill="blue") +
+  geom_bar(stat="identity",fill="#74b6f3") +
   geom_errorbar(aes(ymin=average-sd, ymax=average+sd), width=.3) +
   geom_point(size=2)
 
@@ -227,16 +240,16 @@ Row
 -------------------------------------
 
 ### Description
-FILL HERE
+The chart represents the average rented bike count for each month in a year, with the standard deviation indicated. January has an average rented bike count of slightly less than 250. February has a slightly higher average compared to January, but still less than 250. March sees a sharp increase in average rented bike count, reaching 500. April and May also witness a steady increase in average rented bike count, reaching 750 and a bit less than 1000 respectively. June has the highest average rented bike count of the year, reaching 1250. The average rented bike count drops to 1000 in July and then decreases to 875 in August and October. September has an average rented bike count slightly less than 1000. November and December have an average rented bike count of 625 and 250 respectively, which is lower compared to the earlier months.
 
 Seasonal Statistics {data-navmenu="Data Analysis"}
 ===================================== 
 
-Row {data-height=800}
+Row {data-height=500}
 -------------------------------------
 ### Graph
 
-```{r}
+```{r fig.width=10}
 
 # gets list of the different Seasons in the dataset
 seasons <- unique(data$Season)
@@ -282,16 +295,16 @@ Row
 -------------------------------------
 ### Description
 
-FILL HERE
+This line graph represents the Rented Bike Count by the hour of the day across the season. From the graph, we can conclude that the most rented bike count was during the Summer, while the least was in Winter. All the lines have the same peaks which indicates that the busiest hours throughout all of the 4 seasons are 8 am and 6 pm.
 
 Daily Statistics {data-navmenu="Data Analysis"}
 ===================================== 
 
-Row {data-height=800}
+Row {data-height=500}
 -------------------------------------
-
 ### Graph
-```{r}
+
+```{r fig.width=10}
 # selecting only required columns
 weekday_data <- data %>% select(date, RentCount, Hour)
 # convert date to day of week
@@ -343,13 +356,13 @@ Row
 -------------------------------------
 
 ### Description
-FILL HERE
+This line graph represents the Rented Bike Count by Hour of the day across weekdays. From the graph, we can conclude that the most rented bike count was on Friday, while the least was on Tuesday and Thursday. All of the lines have more or less the same shape with 2 peaks which indicate the busiest hours of the day. These hours, just like the graph of Rented Bike Count by the hour of the day across seasons are at 8 am and 6 pm.
 
 Summer and Winter Comparisons {data-navmenu="Data Analysis"}
 ===================================== 
 
 
-Row {data-height=800}
+Row {data-height=500}
 -------------------------------------
 
 ### Graph 1
@@ -366,9 +379,9 @@ summer_winter_daily_average <- summer_winter_data %>% group_by(date) %>% summari
   group_by(Season) %>% summarise(average=mean(total))
 
 # plots daily averages
-p1 <- ggplot(summer_winter_daily_average, aes(x=Season, y=average)) + 
+p1 <- ggplot(summer_winter_daily_average, aes(x=Season, y=average, fill=Season)) + 
   ylab("Average Rent Count") + xlab("Season") + ggtitle("Daily Averages of Rented Bike Count for Summer and Winter") +
-  geom_bar(position = "dodge", stat = "identity")
+  geom_bar(stat = "identity")
 
 p1
 ```
@@ -376,9 +389,9 @@ p1
 ### Graph 2
 ```{r}
 # plots hourly averages
-p2 <- ggplot(summer_winter_hourly_average, aes(x=Season, y=average)) + 
+p2 <- ggplot(summer_winter_hourly_average, aes(x=Season, y=average, fill=Season)) + 
   ylab("Average Rent Count") + xlab("Season") + ggtitle("Hourly Averages of Rented Bike Count for Summer and Winter") +
-  geom_bar(position = "dodge", stat = "identity")
+  geom_bar(stat = "identity")
 p2
 ```
 
@@ -386,4 +399,4 @@ Row
 -------------------------------------
 
 ### Description
-FILL HERE
+Graph 1 which is a bar chart represents the daily averages of Rented Bike Count for Summer and Winter while graph 2 is a bar chart that represents the Hourly Averages of Rented Bike Count for Summer and Winter. From graph 1 we can conclude that during the Summer the daily average rented bike count is much higher than during that of Winter with summer having a value of about 25000 while winter having a value of about 5000. Similarly, from graph 2 we can conclude that the Hourly average of rented bike count is much higher during the Summer than during the Winter with summer having a value of about 1100 and winter having a value of about 230.
