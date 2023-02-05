@@ -94,8 +94,7 @@ print(cor_matrix)
 
 histogram_data <- hist(data$RentCount, breaks=33, col="blue") 
 
-
-
+write.csv(data, "C:/Users/Malcolm/Downloads/CleanedSeoulBikeData.csv", row.names=FALSE)
 
 # Task3
 
