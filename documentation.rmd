@@ -458,4 +458,4 @@ The work was split as follows:\
     + i. Malcolm Borg for creating the flexdashboard and Luca Micallef for adding the graph descriptions
     + ii. Malcolm Borg
 
-The repository for the project is as follows: https://github.com/MalcB24/dataScienceAssignment
+The repository for the project is also available. [Go to repository](https://github.com/MalcB24/dataScienceAssignment)
