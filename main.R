@@ -210,13 +210,19 @@ melted_grouped_weekday_data %>% ggplot(aes(x=variable, y=value, color=Day, group
 # candle 6
 
 #filters and only keeps required columns
-summer_winter_data <- data %>% filter(Season == "Summer" | Season =="Winter") %>% select(date, Hour, RentCount, Season)
+summer_winter_data <- data %>% filter(Season == "Summer" | Season =="Winter") 
+  %>% select(date, Hour, RentCount, Season)
 
 # gets hourly averages
-summer_winter_hourly_average <- summer_winter_data %>% group_by(Season) %>% summarise(average=mean(RentCount))
+summer_winter_hourly_average <- summer_winter_data %>% group_by(Season) 
+  %>% summarise(average=mean(RentCount))
 
 # gets totals for day
-summer_winter_daily_average <- summer_winter_data %>% group_by(date) %>% summarise(Season=Season, total=sum(RentCount)) %>%
+summer_winter_daily_average <- summer_winter_data %>% group_by(date) %>%
+  reframe(Season=Season, total=sum(RentCount)) %>%
+# gets daily averages
+  group_by(Season) %>% summarise(average=mean(total))
+
 # gets daily averages
   group_by(Season) %>% summarise(average=mean(total))
 
