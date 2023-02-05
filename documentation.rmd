@@ -1,0 +1,459 @@
+---
+title: "Documentation"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+
+library(flexdashboard)
+library(utf8)
+library(pillar)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(data.table)
+library(knitr)
+
+# import csv
+data <- read.csv("C:/Users/Malcolm/Downloads/SeoulBikeData.csv", header=FALSE)
+# remove 1st row
+data <- data[-c(1), ]
+# rename columns
+colnames(data) <- c("date","RentCount", "Hour", "Temp", "Hum", "Wind", 'Vis', "Dew","SolRad","Rain", "Snow","Season", "Holiday","Function")
+data <- type.convert(data, as.is= TRUE, na.strings = "NA")
+
+data$Function[data$Function == 'No'] <- FALSE
+data$Function[data$Function == 'Yes'] <- TRUE
+
+data$Holiday[data$Holiday == 'No Holiday'] <- FALSE
+data$Holiday[data$Holiday == 'Holiday'] <- TRUE
+
+data$date <- dmy(data$date)
+data$RentCount <- as.integer(as.character(data$RentCount))
+data$Hour <- as.numeric(as.character(data$Hour))
+data$Temp <- as.numeric(as.character(data$Temp))
+data$Hum <- as.numeric(as.character(data$Hum))
+data$Vis <- as.numeric(as.character(data$Vis))
+data$Dew <- as.numeric(as.character(data$Dew))
+data$Wind <- as.numeric(as.character(data$Wind))
+data$SolRad <- as.numeric(as.character(data$SolRad))
+data$Rain <- as.numeric(as.character(data$Rain))
+data$Snow <- as.numeric(as.character(data$Snow))
+
+# finds the null values
+null_data <- data[!complete.cases(data),]
+filled_null_data <- data[!complete.cases(data),]
+# list rows that contain the null values
+
+# Task 2
+for(i in 1:nrow(null_data)) 
+{
+  
+  for(j in 1:ncol(null_data))
+  {
+    # if there is a null in the column we replace it with the seasons hourly average
+    if(is.na(null_data[i,j]))
+    {
+      # gets column name of missing value
+      col_name = (colnames(null_data)[j])
+      #gets the hour where the missing value is
+      hour = null_data[i, "Hour"]
+      #gets all data where the season and hour match that of the missing value
+      season_hour_data = filter(data, Season == null_data[i, "Season"] & Hour == hour) 
+      #gets average value
+      hourly_average = mean(season_hour_data[,col_name], na.rm = TRUE)
+
+      if(col_name == "RentCount")
+      {
+        hourly_average = floor(hourly_average)
+      }
+      #replaces the missing value with the average value
+      data[rownames(null_data)[i],col_name] <- hourly_average
+      filled_null_data[rownames(null_data)[i],col_name] <- hourly_average
+    }
+  }
+}
+
+filled_null_data$Temp <- format(round(filled_null_data$Temp,2),nsmall=2)
+filled_null_data$Hum <- format(round(filled_null_data$Hum,2),nsmall=2)
+filled_null_data$Wind <- format(round(filled_null_data$Wind,2),nsmall=2)
+filled_null_data$Vis <- format(round(filled_null_data$Vis,2),nsmall=2)
+filled_null_data$Dew <- format(round(filled_null_data$Dew,2),nsmall=2)
+```
+
+# Importing The Data
+The data used was that provided. It was imported via this command
+``` {r} 
+# import csv
+data <- read.csv("C:/Users/Malcolm/Downloads/SeoulBikeData.csv", header=FALSE)
+```
+
+# Cleaning The Data
+The data provided had to be cleaned and formatted. The columns were renamed and the column types also needed to be updated.  The code to do the changes is as follows: 
+
+```{r} 
+# remove 1st row
+data <- data[-c(1), ]
+# rename columns
+colnames(data) <- c("date","RentCount", "Hour", "Temp", "Hum", "Wind", 'Vis', "Dew",
+    "SolRad","Rain", "Snow","Season", "Holiday","Function")
+data <- type.convert(data, as.is= TRUE, na.strings = "NA")
+
+data$Function[data$Function == 'No'] <- FALSE
+data$Function[data$Function == 'Yes'] <- TRUE
+
+data$Holiday[data$Holiday == 'No Holiday'] <- FALSE
+data$Holiday[data$Holiday == 'Holiday'] <- TRUE
+
+data$date <- dmy(data$date)
+data$RentCount <- as.integer(as.character(data$RentCount))
+data$Hour <- as.numeric(as.character(data$Hour))
+data$Temp <- as.numeric(as.character(data$Temp))
+data$Hum <- as.numeric(as.character(data$Hum))
+data$Vis <- as.numeric(as.character(data$Vis))
+data$Dew <- as.numeric(as.character(data$Dew))
+data$Wind <- as.numeric(as.character(data$Wind))
+data$SolRad <- as.numeric(as.character(data$SolRad))
+data$Rain <- as.numeric(as.character(data$Rain))
+data$Snow <- as.numeric(as.character(data$Snow))
+```
+
+\newpage
+
+# Data Imputation
+The data provided contained null values as can be seen below:
+
+```{r echo=FALSE, eval=TRUE}
+kable(null_data, caption = "Null values")
+```
+\newpage
+As a data imputation strategy we opted to use the '(Rounded) Mean or Moving Average or Median Value' strategy. This implementation was done by getting the average value of the missing data of the same Season and Hour and replacing the missing value with it. After the data imputation was complete, the null values were replaced:
+
+```{r echo=FALSE, eval=TRUE}
+kable(filled_null_data, caption = "Imputated Null values")
+```
+\newpage
+
+# Data Analysis
+## Variable Correlation
+The correlation between the data was calculated. A copy of the data was made and it was modified so as to be valid for the `cor()' function
+
+```{r}
+# copy of data
+temp_dat <- data
+
+# changing data so as to be numerical to calculate correlation
+temp_dat$Season[temp_dat$Season == 'Winter'] <- 0
+temp_dat$Season[temp_dat$Season == 'Spring'] <- 1
+temp_dat$Season[temp_dat$Season == 'Summer'] <- 2
+temp_dat$Season[temp_dat$Season == 'Autumn'] <- 3
+temp_dat$Holiday[temp_dat$Holiday == 'FALSE'] <- 0
+temp_dat$Holiday[temp_dat$Holiday == 'TRUE'] <- 1
+temp_dat$Function[temp_dat$Function == 'FALSE'] <- 0
+temp_dat$Function[temp_dat$Function == 'TRUE'] <- 1
+
+# changing types
+temp_dat$Season <- as.numeric(temp_dat$Season)
+temp_dat$Holiday <- as.numeric(temp_dat$Holiday)
+temp_dat$Function <- as.numeric(temp_dat$Function)
+
+# removing date column
+dataNoDate <- temp_dat[, !colnames(temp_dat) %in% "date"]
+
+str(dataNoDate)
+
+cor_matrix <- cor(dataNoDate)
+print(cor_matrix)
+```
+
+\newpage
+
+## Correlation Results
+
+The correlation between the variables is as follows:
+
+RentCount and Hour: 0.41 (Positive Correlation)\
+RentCount and Temp: 0.54 (Positive Correlation)\
+RentCount and Hum: -0.2 (No Correlation)\
+RentCount and Wind: 0.12 (Positive Correlation)\
+RentCount and Vis: 0.2 (Positive Correlation)\
+RentCount and Dew: 0.38 (Positive Correlation)\
+RentCount and SolRad: 0.26 (Positive Correlation)\
+RentCount and Rain: -0.12 (Negative Correlation)\
+RentCount and Snow: -0.14 (Negative Correlation)\
+RentCount and Season: 0.36 (Positive Correlation)\
+RentCount and Holiday: -0.72 (Negative Correlation)\
+RentCount and Function: 0.2 (Positive Correlation)\
+Hour and Temp: 0.12 (No Correlation)\
+Hour and Hum: -0.24 (Negative Correlation)\
+Hour and Wind: 0.29 (Positive Correlation)\
+Hour and Vis: 0.1 (No Correlation)\
+Hour and Dew: 0 (No Correlation)\
+Hour and SolRad: 0.15 (Positive Correlation)\
+Hour and Rain: 0.01 (No Correlation)\
+Hour and snow: -0.02 (No Correlation)\
+Hour and Season: -0.95 (Negative Correlation)\
+Hour and Holiday: 0.93 (Positive Correlation)\
+Hour and Function: 0.01 (No Correlation)\
+Temp and Hum: 0.16 (Positive Correlation)\
+Temp and Wind: -0.04 (No Correlation)\
+Temp and Vis: 0.03 (No Correlation)\
+Temp and Dew: 0.91 (Positive Correlation)\
+Temp and SolRad: 0.35 (Positive Correlation)\
+Temp and Rain: 0.05 (Positive Correlation)\
+Temp and Snow: -0.22 (Negative Correlation)\
+Temp and Season: 0.59 (Positive Correlation)\
+Temp and Holiday: -0.59 (Negative Correlation)\
+Temp and Function: -0.05 (No Correlation)\
+Hum and Wind : -0.34 (Negative Correlation)\
+Hum and Vis: -0.54 (Negative Correlation)\
+Hum and Dew: 0.54 (Positive Correlation)\
+Hum and SolRad: -0.46 (Negative Correlation)\
+Hum and Rain: 0.24 (Positive Correlation)\
+Hum and Snow: 0.11 (Positive Correlation)\
+Hum and Season: 0.19 (Positive Correlation)\
+Hum and Holiday: -0.5 (Negative Correlation)\
+Hum and Function: -0.02 (No Correlation)\
+Wind and Vis: 0.17 (Positive Correlation)\
+Wind and Dew: -0.18 (Negative Correlation)\
+Wind and SolRad: 0.33 (Positive Correlation)\
+Wind and Rain: -0.02 (No Correlation)\
+Wind and Snow: 0 (No Correlation)\
+Wind and Season: -0.17 (Negative Correlation)\
+Wind and Holiday: 0.23 (Positive Correlation)\
+Wind and Function: 0.01 (No Correlation)\
+Vis and Dew: -0.18 (Negative Correlation)\
+Vis and SolRad: 0.15 (Positive Correlation)\
+Vis and Rain: -0.17 (Negative Correlation)\
+Vis and Snow: -0.12 (Negative Correlation)\
+Vis and Season: 0.11 (Positive Correlation)\
+Vis and Holiday: 0.32 (Positive Correlation)\
+Vis and Function: -0.03 (No Correlation)\
+Dew and SolRad: 0.09 (Positive Correlation)\
+Dew and Rain: 0.13 (Positive Correlation)\
+Dew and Snow: -0.15 (Negative Correlation)\
+Dew and Season: 0.58 (Positive Correlation)\
+Dew and Holiday: -0.67 (Negative Correlation)\
+Dew and Function: -0.05 (No Correlation)\
+SolRad and Rain: -0.07 (Negative Correlation)\
+SolRad and Snow: -0.07 (Negative Correlation)\
+SolRad and Season: 0.95 (Positive Correlation)\
+SolRad and Holiday: -0.51 (Negative Correlation)\
+SolRad and Function: -0.01 (No Correlation)\
+Rain and Snow: 0.01 (No Correlation)\
+Rain and Season: 0.33 (Positive Correlation)\
+Rain and Holiday: -0.14 (Negative Correlation)\
+Rain and Function: 0 (No Correlation)\
+Snow and Season: 0.33 (Positive Correlation)\
+Snow and Holiday: -0.14 (Negative Correlation)\
+Snow and Function: 0 (No Correlation)\
+Season and Holiday: -0.58 (Negative Correlation)\
+Season and Function: -0.2 (Negative Correlation)\
+Holiday and Function: -0.03 (No Correlation)\
+
+\newpage
+
+## Average and Standard Deviation
+Average and Standard Deviation for each month calculated.\
+To do so the data was first grouped by month and then the mean and sd where calculated from the grouping using the 'mean()' and 'sd()' function respectively.\
+Then the date was converted to its month name.\
+Finally the data was ordered via month
+
+```{r eval= TRUE}
+# group data by month
+monthly <- data %>%  group_by(month = lubridate::floor_date(date, "month")) %>%
+  summarize(average = mean(RentCount), sd = sd(RentCount))
+
+# convert from date to month name
+monthly$month <- months(as.Date(monthly$month)) 
+# order by month
+monthly <- monthly %>% mutate(month = factor(month, levels=month.name)) %>% arrange(month)
+```
+The data was then given to ggplot and the following graph was drawn
+```{r eval=TRUE}
+# plot average and sd per month
+ggplot(monthly, aes(x=month, y=average)) + ylab("Rent Count") + xlab("Month") + ggtitle("Average and Standard Deviation of Rented Bike Count for each month") +
+  geom_bar(stat="identity",fill="blue") +
+  geom_errorbar(aes(ymin=average-sd, ymax=average+sd), width=.3) +
+  geom_point(size=2)
+```
+\newpage
+
+## Seasonal Data
+For the seasonal data, first the seasons in data where acquired and a new dataframe for the data was created.
+```{r eval= TRUE}
+# gets list of the different Seasons in the dataset
+seasons <- unique(data$Season)
+
+# creates empty dataframe
+seasonal_hourly = data.frame()
+```
+Then for each season present in the data, the data was filtered and gruoped by the hour. The average RentCount was calculated from the grouping.\
+Then a transposition of the data was done and the corresponding season was added to the data.\
+The columns were renamed accordingly, each column represents the hour and the last column represents the Season.\
+The first row is removed as this contains the old column names.\
+Finally the data is added to the previously created dataframe.
+```{r eval= TRUE}
+# loops through the seasons
+for(i in seasons)
+{
+  
+  # filters the data to show only of season i
+  x <- filter(data, Season == i) %>% 
+    # groups the data by the hour
+    group_by(Hour) %>% 
+    # gets the mean RentCount for each hour
+    summarise(average = mean(RentCount))
+  
+  #transposition of x 
+  y <- transpose(x)
+  # adds the season that corresponds to the data
+  y <- cbind(y, i)
+  # names the columns
+  colnames(y) <- c(0:23, "Season")
+  # removes the first row which held the column names
+  y <- y[-c(1), ]
+  # adds the season row to the seasonal hourly
+  seasonal_hourly = rbind(seasonal_hourly, y)
+
+}
+
+```
+\newpage
+To plot the graph, the data was melted, so as to be able to plot the data for each season on the same graph for easier comparisons and then paassed to ggplot
+```{r eval= TRUE}
+#moves season column to front (not necessary but easier to understand when viewing)
+seasonal_hourly <- seasonal_hourly %>% relocate(Season)
+# melts the seasonal_hourly dataframe so as to be able to plot
+melted <- reshape2::melt(seasonal_hourly, id.vars="Season")
+# plots a line for each Season
+melted %>% ggplot(aes(x=variable,y=value, color = Season, group=Season)) + xlab("Hour") + ylab("Average Rent Count") + ggtitle("Rented Bike Count by Hour of the day across season") + 
+  geom_line(linewidth=1.2)
+
+```
+\newpage
+
+## Hourly Weekday Data
+
+For the hourly weekday data, first, only the required columns were selected, with which then the data was replaced to the day of the week. Then the weekend was filtered out
+```{r eval=TRUE}
+
+# selecting only required columns
+weekday_data <- data %>% select(date, RentCount, Hour)
+# convert date to day of week
+weekday_data$date <- weekdays(weekday_data$date)
+# remove saturday and sunday
+weekday_data <- filter(weekday_data, date != "Saturday" & date != "Sunday")
+```
+Then as done above, the different days of week present in the data were gathered and an empty dataframe was created.\
+Then for each day present in the data, the data was filtered and gruoped by the hour. The average RentCount was calculated from the grouping.\
+Then a transposition of the data was done and the corresponding weekday was added to the data.\
+The columns were renamed accordingly, each column represents the hour and the last column represents the Day of the week.\
+The first row is removed as this contains the old column names.\
+Finally the data is added to the previously created dataframe.
+```{r eval=TRUE}
+
+# get the different days of week in the data
+days_of_week <- unique(weekday_data$date)
+
+# create a new empty dataframe
+grouped_weekday_data = data.frame()
+
+# loops through the different days
+for(i in days_of_week)
+{
+  # filters data to show only of the day i
+  x <- filter(weekday_data, date == i) %>%
+    # groups data by the hour
+    group_by(Hour) %>% 
+    # gets mean for each hour
+    summarise(average=mean(RentCount))
+  
+  # transposition of x
+  y <-transpose(x)
+  # adds the day that corresponds to the date
+  y <- cbind(y,i)
+  # renames columns
+  colnames(y) <- c(0:23, "Day")
+  # removes the first row which held the column names
+  y <-y[-c(1),]
+  # adds the day row to the grouped weekday data
+  grouped_weekday_data = rbind(grouped_weekday_data, y)
+}
+```
+\newpage
+To plot the graph, the data was melted, so as to be able to plot the data for each day on the same graph for easier comparisons and then paassed to ggplot
+```{r eval=TRUE}
+#moves day column to front (not necessary but easier to understand when viewing)
+grouped_weekday_data <- grouped_weekday_data %>% relocate(Day)
+# melts the grouped_weekday_data so as to be able to plot
+melted_grouped_weekday_data <- reshape2::melt(grouped_weekday_data, id.vars="Day")
+
+# plots line for each day of week
+melted_grouped_weekday_data %>% ggplot(aes(x=variable, y=value, color=Day, group=Day)) +
+  xlab("Hour") + ylab("Average Rent Count") + ggtitle("Rented Bike Count by Hour of the day across weekdays") + 
+  geom_line(linewidth=1.2)
+
+```
+
+\newpage
+
+## Summer Winter Comparisons
+
+To compare summer and winter data, first a dataframe was created from filtering the data from other seasons. Only required columns where selected
+```{r eval=TRUE}
+#filters and only keeps required columns
+summer_winter_data <- data %>% filter(Season == "Summer" | Season =="Winter") %>% select(date, Hour, RentCount, Season)
+```
+Then the hourly and daily averages where calculated.
+```{r eval=TRUE}
+# gets hourly averages
+summer_winter_hourly_average <- summer_winter_data %>% group_by(Season) %>% summarise(average=mean(RentCount))
+
+# gets totals for day
+summer_winter_daily_average <- summer_winter_data %>% group_by(date) %>% summarise(Season=Season, total=sum(RentCount)) %>%
+# gets daily averages
+  group_by(Season) %>% summarise(average=mean(total))
+
+```
+\newpage
+Then the data was passed to ggplot to plot the charts.
+```{r eval=TRUE, fig.show="hold", out.width="50%"}
+# plots daily averages
+ggplot(summer_winter_daily_average, aes(x=Season, y=average)) + 
+  ylab("Average Rent Count") + xlab("Season") + ggtitle("Daily Averages of Rented Bike Count for Summer and Winter") +
+  geom_bar(position = "dodge", stat = "identity")
+
+# plots hourly averages
+ggplot(summer_winter_hourly_average, aes(x=Season, y=average)) + 
+  ylab("Average Rent Count") + xlab("Season") + ggtitle("Hourly Averages of Rented Bike Count for Summer and Winter") +
+  geom_bar(position = "dodge", stat = "identity")
+```
+
+\newpage
+# Distribution of work
+The work was split as follows:\
+    
+* Task 1:
+    + i.  Luca Micallef
+    + ii.  Luca Micallef
+    + iii.  Luca Micallef
+* Task 2:
+    + i. Malcolm Borg
+    + ii. Malcolm Borg
+    + iii. Malcolm Borg
+    + iv. Malcolm Borg
+* Task 3:
+    + i.  Luca Micallef
+    + ii.  Luca Micallef
+    + iii. Malcolm Borg
+    + iv. Malcolm Borg
+    + v. Malcolm Borg
+    + vi. Malcolm Borg for generating the graps and Luca Micallef for the interpretation
+* Task 4:
+    + i. Malcolm Borg for creating the flexdashboard and Luca Micallef for adding the graph descriptions
+    + ii. Malcolm Borg
+
+The repository for the project is as follows: https://github.com/MalcB24/dataScienceAssignment
